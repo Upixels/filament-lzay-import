@@ -1,0 +1,52 @@
+{
+    "name": "yuyu-tech/filament-lazy-import",
+    "description": "",
+    "keywords": [
+        "excel-import",
+        "laravel",
+        "filament-lzay-file-import`"
+    ],
+    "autoload": {
+        "psr-4": {
+            "YuyuTech\\FilamentLazyImport\\": "src/"
+        }
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Bhushan Mer",
+            "email": "bhushanmer@gmail.com"
+        }
+    ],
+    "require": {
+        "konnco/filament-import": "*"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.0",
+        "nunomaduro/collision": "^6.0",
+        "nunomaduro/larastan": "^2.0.1",
+        "orchestra/testbench": "^7.0",
+        "pestphp/pest": "^1.21",
+        "pestphp/pest-plugin-laravel": "^1.1",
+        "phpstan/extension-installer": "^1.1",
+        "phpstan/phpstan-deprecation-rules": "^1.0",
+        "phpstan/phpstan-phpunit": "^1.0",
+        "phpunit/phpunit": "^9.5"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "extra": {
+        "laravel": {
+            "providers": [
+                "YuyuTech\\FilamentLazyImport\\Providers\\FilamentLazyImportServiceProvider"
+            ]
+        }
+    }
+}
