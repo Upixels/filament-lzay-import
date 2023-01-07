@@ -4,7 +4,7 @@
     "keywords": [
         "excel-import",
         "laravel",
-        "filament-lzay-file-import`"
+        "filament-lazy-file-import"
     ],
     "autoload": {
         "psr-4": {
