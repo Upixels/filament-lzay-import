@@ -19,6 +19,8 @@ class FilamentLazyImportServiceProvider extends PluginServiceProvider {
             ->hasTranslations()
             ->hasCommands([
                 ClearTemporaryDisk::class
-            ]);
+            ])
+            ->hasMigrations(['create_excel_import_logs_table'])
+            ->runsMigrations();
     }
 }

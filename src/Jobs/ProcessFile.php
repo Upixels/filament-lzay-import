@@ -163,7 +163,9 @@ class ProcessFile implements ShouldQueue
         $excelImportLog->output_file = $outputFile;
         $excelImportLog->status = $statuses['Scheduled'];
         $excelImportLog->started_at = now();
-        $excelImportLog->started_at = now();
+        $excelImportLog->updated_at = now();
+        $excelImportLog->created_by = $this->authUser instanceof Model && !empty($this->authUser->id) ? $this->authUser->id : null;
+        $excelImportLog->updated_by = $this->authUser instanceof Model && !empty($this->authUser->id) ? $this->authUser->id : null;
         $excelImportLog->save();
 
         /**
