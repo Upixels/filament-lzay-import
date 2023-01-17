@@ -15,11 +15,10 @@ return new class extends Migration
     {
         Schema::create('excel_import_logs', function (Blueprint $table) {
             $table->id();
-            $table->string('input_file', 500);
+            $table->integer('type')->unsigned()->nullable();
             $table->integer('total_no_of_records')->unsigned()->nullable();
             $table->integer('no_of_records_passed')->unsigned()->nullable();
             $table->integer('no_of_records_failed')->unsigned()->nullable();
-            $table->string('output_file', 500)->nullable();
             $table->tinyInteger('status')->unsigned()->default(1);
             $table->text('message')->nullable();
             $table->dateTime('started_at');

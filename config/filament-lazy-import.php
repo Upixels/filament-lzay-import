@@ -6,8 +6,8 @@ return [
      */
     'file_log' => [
         'disk' => 'local',
-        'original_file_directory' => 'filament-import/original/',
-        'output_file_directory' => 'filament-import/processed/',
+        'input_file_directory' => 'filament-import/input/',
+        'output_file_directory' => 'filament-import/output/',
     ],
 
     /**
@@ -17,6 +17,21 @@ return [
         1 => 'Scheduled',
         2 => 'Completed',
         3 => 'Failed'
+    ],
+
+    /**
+     * Attachment Type
+     */
+    'attachment_type' => [
+        'input_file' => 1,
+        'output_file' => 2
+    ],
+
+    /**
+     * File Type
+     */
+    'type' => [
+        1 => 'Shop Brands',
     ],
 
     /**
@@ -36,4 +51,11 @@ return [
      * Default: 5
      */
     'trie' => 5,
+
+    'models' => [
+        'user' => App\Models\User::class,
+        'import_log' => Upixels\FilamentLazyImport\Models\ExcelImportLog::class
+    ],
+
+    'timestamp_format' => 'M d, Y H:i',
 ];
