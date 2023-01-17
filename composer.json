@@ -19,7 +19,9 @@
         }
     ],
     "require": {
-        "konnco/filament-import": "1.4.1"
+        "konnco/filament-import": "1.4.1",
+        "owenvoke/blade-fontawesome": "*",
+        "yuyu-tech/file-manager": "*"
     },
     "require-dev": {
         "laravel/pint": "^1.0",

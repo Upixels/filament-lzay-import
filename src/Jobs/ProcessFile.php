@@ -14,6 +14,7 @@ use Maatwebsite\Excel\HeadingRowImport;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Notifications\Notification;
+use FileManager;
 
 class ProcessFile implements ShouldQueue
 {
@@ -92,11 +93,18 @@ class ProcessFile implements ShouldQueue
     protected $notificationHandler;
 
     /**
+     * Type
+     *
+     * @var null|int
+     */
+    protected null|int $type = null;
+
+    /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($authUser, $model, $logModel, $data, $fields, $mutateBeforeCreate, $mutateAfterCreate, $handleRecordCreation, $notificationHandler)
+    public function __construct($authUser, $model, $logModel, $data, $fields, $mutateBeforeCreate, $mutateAfterCreate, $handleRecordCreation, $notificationHandler, $type)
     {
         $this->tries = config('filament-lazy-import.tries', 5);
         $this->authUser = $authUser;
@@ -109,6 +117,7 @@ class ProcessFile implements ShouldQueue
         $this->handleRecordCreation = $handleRecordCreation;
         $this->logChannel = config('filament-lazy-import.log_channel');
         $this->notificationHandler = $notificationHandler;
+        $this->type = $type;
     }
 
     /**
@@ -121,34 +130,23 @@ class ProcessFile implements ShouldQueue
         $statuses = array_flip(config('filament-lazy-import.status', []));
 
         $disk = config('filament-lazy-import.file_log.disk');
-        $originalFilePath = config('filament-lazy-import.file_log.original_file_directory');
+        $inputFilePath = config('filament-lazy-import.file_log.input_file_directory');
         $outputFilePath = config('filament-lazy-import.file_log.output_file_directory');
         $fileDisk = config('filament-import.temporary_files.disk');
         $contents = Storage::disk($fileDisk)->get($this->data['file']);
         $arrFile = explode('/', $this->data['file']);
         $fileName = array_pop($arrFile);
-        $inputFile = $originalFilePath .$fileName;
-        $outputFile = $outputFilePath .$fileName;
-
-        /**
-         * Store original
-         */
-        Storage::disk($disk)
-            ->put($inputFile, $contents, 'private');
-
-        /**
-         * Create output file
-         */
-        if(!Storage::disk($disk)->exists($outputFile)) {
-            $outputHeaders = $this->getOutputHeaders($fileDisk, $this->data['file']);
-            Storage::disk($disk)
-                ->put($outputFile, implode(',', $outputHeaders), 'private');
-        }
+        $mimeType = Storage::disk($fileDisk)->mimeType($this->data['file']);
+        $extension = \File::extension($fileName);
 
         /**
          * Create import log.
          */
-        $excelImportLog = (new $this->logModel())->where('input_file', $inputFile)->first();
+        $excelImportLog = (new $this->logModel())->whereHas('inputFile', function($query) use($fileName) {
+            return $query->where('original_file_name', $fileName)
+                ->whereNotNull('original_file_name')
+                ->where('original_file_name', '<>', '');
+        })->first();
 
         /**
          * We are not processing already processed files. If we get a log entry with input file name and status is completed. In that case we will skip that file.
@@ -157,16 +155,23 @@ class ProcessFile implements ShouldQueue
             Log::channel($this->logChannel)->info('Skipping: input file is being already processed.');
             return;
         }
+        else {
+            $excelImportLog = new $this->logModel();
+            $excelImportLog->type = $this->type;
+            $excelImportLog->status = $statuses['Scheduled'];
+            $excelImportLog->started_at = now();
+            $excelImportLog->updated_at = now();
+            $excelImportLog->created_by = $this->authUser instanceof Model && !empty($this->authUser->id) ? $this->authUser->id : null;
+            $excelImportLog->updated_by = $this->authUser instanceof Model && !empty($this->authUser->id) ? $this->authUser->id : null;
+            $excelImportLog->save();
 
-        $excelImportLog = new $this->logModel();
-        $excelImportLog->input_file = $inputFile;
-        $excelImportLog->output_file = $outputFile;
-        $excelImportLog->status = $statuses['Scheduled'];
-        $excelImportLog->started_at = now();
-        $excelImportLog->updated_at = now();
-        $excelImportLog->created_by = $this->authUser instanceof Model && !empty($this->authUser->id) ? $this->authUser->id : null;
-        $excelImportLog->updated_by = $this->authUser instanceof Model && !empty($this->authUser->id) ? $this->authUser->id : null;
-        $excelImportLog->save();
+            FileManager::storeContent($contents, $fileName, $mimeType, $extension, $excelImportLog, 'inputFile', $inputFilePath);
+            $outputHeaders = $this->getOutputHeaders($fileDisk, $this->data['file']);
+            FileManager::storeContent(implode(',', $outputHeaders), $fileName, $mimeType, $extension, $excelImportLog, 'outputFile', $outputFilePath);
+        }
+
+        $excelImportLog->load(['inputFile', 'outputFile']);
+        $outputFile = $outputFilePath .$excelImportLog->outputFile->id .'.' .$excelImportLog->outputFile->extension;
 
         /**
          * Import file.

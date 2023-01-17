@@ -39,7 +39,7 @@ class LazyImportAction extends KonncoImportAction
      *
      * @var Model
      */
-    protected string $logModel = ExcelImportLog::class;
+    protected string|null $logModel = null;
 
     /**
      * notification handler
@@ -47,6 +47,13 @@ class LazyImportAction extends KonncoImportAction
      * @var bool|string
      */
     protected bool|string $notificationHandler = true;
+
+    /**
+     * Type
+     *
+     * @var null|int
+     */
+    protected null|int $type = null;
 
     /**
      * Get Default Name
@@ -64,6 +71,8 @@ class LazyImportAction extends KonncoImportAction
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->logModel = config('filament-lazy-import.models.import_log', ExcelImportLog::class);
 
         $this->label(fn (): string => __('filament-import::actions.import'));
 
@@ -86,7 +95,7 @@ class LazyImportAction extends KonncoImportAction
             $model = $form->getModel();
 
             $this->process(function (array $data) use ($model) {
-                ProcessFile::dispatch(auth()->user(), $model, $this->logModel, $data, $this->fields, $this->mutateBeforeCreateLazy, $this->mutateAfterCreateLazy, $this->handleLazyRecordCreation, $this->notificationHandler);
+                ProcessFile::dispatch(auth()->user(), $model, $this->logModel, $data, $this->fields, $this->mutateBeforeCreateLazy, $this->mutateAfterCreateLazy, $this->handleLazyRecordCreation, $this->notificationHandler, $this->type);
                 return;
             });
 
@@ -161,6 +170,19 @@ class LazyImportAction extends KonncoImportAction
     public function notificationHandler(bool|string $class): static
     {
         $this->notificationHandler = $class;
+
+        return $this;
+    }
+
+    /**
+     * Set type
+     *
+     * @param int $type
+     * @return static
+     */
+    public function type(null|int $type): static
+    {
+        $this->type = $type;
 
         return $this;
     }

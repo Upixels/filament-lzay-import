@@ -4,6 +4,7 @@ namespace Upixels\FilamentLazyImport;
 use Filament\PluginServiceProvider;
 use Spatie\LaravelPackageTools\Package;
 use Upixels\FilamentLazyImport\Console\Commands\ClearTemporaryDisk;
+use Upixels\FilamentLazyImport\Widgets\ImportLog;
 
 class FilamentLazyImportServiceProvider extends PluginServiceProvider {
     /**
@@ -21,6 +22,11 @@ class FilamentLazyImportServiceProvider extends PluginServiceProvider {
                 ClearTemporaryDisk::class
             ])
             ->hasMigrations(['create_excel_import_logs_table'])
-            ->runsMigrations();
+            ->runsMigrations()
+            ->hasViews();
     }
+
+    protected array $widgets = [
+        ImportLog::class,
+    ];
 }
