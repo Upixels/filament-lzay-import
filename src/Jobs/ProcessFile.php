@@ -93,6 +93,11 @@ class ProcessFile implements ShouldQueue
     protected $notificationHandler;
 
     /**
+     * Timeout
+     */
+    public $timeout = 0;
+
+    /**
      * Type
      *
      * @var null|int
